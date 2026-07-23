@@ -1,6 +1,10 @@
 # WXwork_AutoSendMessage_Tool
 This project can enable users to send messages in and only in WXwork quickly and automatically, which improve working efficiency.
 
+With this tool, you can send message and pictures to all receivers in the neme list, just type what you want to send at first! We also provide several templates for you, and new updates with load and save templates functions will be available in several versions.
+
+All you need to do, is to open the software, type the message, and press the button!
+
 --Date 2026-07-17
 
 The exe file named WXwork_AutoSendMessage_Tool.exe is the tool, it isn't perfect now, but new updates will be uploaded later.
@@ -8,3 +12,7 @@ The exe file named WXwork_AutoSendMessage_Tool.exe is the tool, it isn't perfect
 --Date 2026-07-18
 
 New features are added, just download the exe file to use it.
+
+--Date 2026-07-23
+
+We now allow you to load name list from word input. If you want to send slower or faster, we allow you to adjust the interval time between actions now.
