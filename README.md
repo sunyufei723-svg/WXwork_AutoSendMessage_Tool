@@ -7,7 +7,7 @@ All you need to do, is to open the software, type the message, and press the but
 
 --Date 2026-07-17
 
-The exe file named WXwork_AutoSendMessage_Tool.exe is the tool, it isn't perfect now, but new updates will be uploaded later.
+The exe file named WXwork_AutoSendMessage_Tool v0.7.0 is the first version, it isn't perfect now, but new updates will be uploaded later.
 
 --Date 2026-07-18
 
