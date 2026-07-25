@@ -22,3 +22,7 @@ We now allow you to load name list from word input. If you want to send slower o
 Now you can create and update your owner tailored templates! Create a txt file, edit the template and save it to a template file (for example, new.template), then you can load the template each time you want, rather than type the template each time. Also, you can copy the template file into the archive named template, so that the software will load your template automatically.
 
 For detailed instruction, follow the content in the example.txt.
+
+--Date 2026-07-25
+
+We've improved the view for sending status and the list of receivers finished sending and unfinished sending.
