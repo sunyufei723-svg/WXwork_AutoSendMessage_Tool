@@ -1,0 +1,11 @@
+{
+    "subject": "数学",
+    "template_name": "作业提醒",
+    "interval": "1",
+    "count": "",
+    "rate": "",
+    "avg": "",
+    "max": "",
+    "content": "",
+    "message_content": "{{date}} {{subject}}作业今晚18：00就要截止了哦，请尽快提交～"
+}

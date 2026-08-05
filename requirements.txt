@@ -1,0 +1,6 @@
+openpyxl
+pyautogui
+pygetwindow
+pyperclip
+pywin32
+Pillow

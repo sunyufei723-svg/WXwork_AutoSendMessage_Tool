@@ -1,0 +1,25 @@
+# 虚拟环境
+.venv/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+app/__pycache__/
+app/ui/__pycache__/
+
+# PyInstaller 构建产物
+build/
+dist/
+*.spec
+
+# 配置文件（含个人信息，按模板提供默认示例）
+config.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 模板
+templates/
