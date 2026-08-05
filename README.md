@@ -43,3 +43,15 @@ We've improved the view for sending status and the list of receivers finished se
 We are exicited to claim that, we've redesigned the UI radically. Now there are three pages in the software, responsible for different functions.
 
 The design stems from the desire that, we want to make the software smaller in size, so users can put it beside WXwork to check anytime.
+
+- Date 2026-08-05
+
+We've fixed a bug in v1.5.2. And now we push our code to the main branch. The following is instruction.
+
+If you want to get the software conveniently, just go to the release to get the latest version, and put the exe with templates\ in the same folder.
+
+If you want to study and run the python code, you can do like:
+
+Run the file 'main.py' to run the software (if you've already had a .venv environment).
+
+Run the file 'build.bat' to package the python file into one exe file.
