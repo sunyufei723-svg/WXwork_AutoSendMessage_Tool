@@ -15,6 +15,7 @@ dist/
 
 # 配置文件（含个人信息，按模板提供默认示例）
 config.json
+rosters/
 
 # IDE
 .vscode/

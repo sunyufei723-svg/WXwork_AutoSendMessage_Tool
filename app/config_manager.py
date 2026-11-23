@@ -5,6 +5,7 @@ import os
 
 from .constants import CONFIG_FILE
 from .context import add_log, ctx
+from .state import state
 
 
 def load_config():
@@ -13,6 +14,7 @@ def load_config():
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             config = json.load(f)
+        state.active_roster_id = config.get("active_roster_id", "")
         ctx.subject_var.set(config.get("subject", ""))
         ctx.template_name_var.set(config.get("template_name", ""))
         ctx.interval_entry.delete(0, "end")
@@ -31,6 +33,7 @@ def load_config():
 
 def save_config():
     config = {
+        "active_roster_id": state.active_roster_id,
         "subject": ctx.subject_var.get(),
         "template_name": ctx.template_name_var.get(),
         "interval": ctx.interval_entry.get(),

@@ -10,6 +10,7 @@ from .context import (
     get_template_data,
     render_template,
     set_ui_locked,
+    update_send_stats,
     update_status,
 )
 from .state import state
@@ -54,8 +55,8 @@ def begin():
         update_status("任务正在进行中，请勿重复发送")
         add_log("启动失败：有正在进行的任务", "error")
         return
-    state.sent_students.clear()
-    state.unfinished_students = state.students.copy()
+    state.reset_progress()
+    update_send_stats()
     start()
 
 
@@ -67,6 +68,10 @@ def start():
     if len(state.students) == 0:
         update_status("请先读取学生名单")
         add_log("启动失败：学生名单为空", "error")
+        return
+    if not state.unfinished_students:
+        update_status("请至少勾选一名本次发送的学生")
+        add_log("启动失败：没有勾选发送对象", "error")
         return
     # 主线程中收集控件数据（线程安全）
     template = ctx.message_text.get("1.0", "end-1c").strip()

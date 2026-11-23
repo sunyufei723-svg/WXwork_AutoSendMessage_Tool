@@ -126,7 +126,7 @@ def process_student(name, current_message):
             state.sent_students.add(name)
             state.unfinished_students = [
                 name
-                for name in state.students
+                for name in state.task_students
                 if name not in state.sent_students
             ]
         return True

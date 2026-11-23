@@ -41,7 +41,12 @@ class AppContext:
         self.preview_box = None
         # 名单与图片
         self.student_info_var = None
-        self.student_listbox = None
+        self.recipient_summary_var = None
+        self.student_tree = None
+        self.roster_box = None
+        self.roster_var = None
+        self.roster_ids = []
+        self.student_editor = None
         self.image_info_var = None
         # 发送统计
         self.total_var = None
@@ -101,10 +106,23 @@ def update_status(text):
 
 
 def refresh_student_text():
-    """将 state.students 写入第2页学生名单文本框，并更新人数标签"""
-    ctx.student_info_var.set(f"已加载 {len(state.students)} 名学生")
-    ctx.student_listbox.delete("1.0", "end")
-    ctx.student_listbox.insert("1.0", "\n".join(state.students))
+    """刷新名单与本次发送标记；原始名单包含未勾选的学生。"""
+    selected = len(state.selected_students)
+    ctx.student_info_var.set(
+        f"名单 {len(state.students)} 人\n本次发送 {selected} 人\n不发送 {len(state.students) - selected} 人"
+    )
+    roster = state.rosters.get(state.active_roster_id)
+    title = f"{roster['name']} · {roster.get('subject', '')}" if roster else "未选择名单"
+    ctx.recipient_summary_var.set(f"{title}：本次发送 {selected} 人 / 名单 {len(state.students)} 人")
+    tree = ctx.student_tree
+    children = tree.get_children()
+    if children:
+        tree.delete(*children)
+    for index, name in enumerate(state.students):
+        included = name not in state.excluded_students
+        tree.insert("", "end", iid=str(index), values=(
+            "☑" if included else "☐", name, "发送" if included else "不发送"
+        ), tags=(() if included else ("excluded",)))
 
 
 def update_preview(*args):
@@ -155,8 +173,7 @@ def set_ui_locked(locked):
     for btn in ctx.lockable_buttons:
         btn.config(state=new_state)
     ctx.interval_entry.config(state=new_state)
-    # 学生名单文本框：锁定时禁用，解锁时恢复可编辑
-    ctx.student_listbox.config(state=new_state)
+    ctx.roster_box.config(state="disabled" if locked else "readonly")
     ctx.message_text.config(state=new_state)
     ctx.message_box.config(state=new_state)
     ctx.date_entry.config(state=new_state)

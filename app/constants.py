@@ -11,12 +11,13 @@ def _get_app_dir():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-APP_TITLE = "企业微信群发助手"
+APP_TITLE = "企业微信群发助手 v1.6.0"
 
 # 路径统一基于程序所在目录，保证打包成 exe 后 config/templates 位置正确
 APP_DIR = _get_app_dir()
 CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 TEMPLATE_DIR = os.path.join(APP_DIR, "templates")
+ROSTER_DIR = os.path.join(APP_DIR, "rosters")
 
 SUPPORTED_TEMPLATE_EXTS = (
     ".txt",

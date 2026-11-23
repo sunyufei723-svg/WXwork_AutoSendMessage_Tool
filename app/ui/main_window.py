@@ -21,8 +21,12 @@ from ..students import (
     clear_students,
     load_excel,
     load_image,
+    load_saved_rosters,
     load_text_students,
+    on_roster_selected,
     save_student_list,
+    set_recipients,
+    toggle_student,
 )
 from ..tasks import begin, exit_app, pause, resume, stop
 from ..templates import (
@@ -163,6 +167,10 @@ def _build_page_send(page1_frame):
     stats_card = ttk.LabelFrame(page1_frame, text="  发送统计  ", style="Card.TLabelframe", padding=8)
     stats_card.pack(fill="x", padx=4, pady=(0, 4))
 
+    ctx.recipient_summary_var = tk.StringVar(value="未选择名单")
+    ttk.Label(stats_card, textvariable=ctx.recipient_summary_var, wraplength=460,
+              style="Card.TLabel").pack(fill="x")
+
     stats_inner = tk.Frame(stats_card, bg=BG_CARD)
     stats_inner.pack(fill="x")
 
@@ -189,7 +197,7 @@ def _build_page_manage(page2_frame):
     p2_content = tk.Frame(page2_frame, bg=BG_MAIN)
     p2_content.pack(fill="both", expand=True, padx=4, pady=4)
     p2_content.grid_columnconfigure(0, weight=0)
-    p2_content.grid_columnconfigure(1, weight=0)
+    p2_content.grid_columnconfigure(1, weight=1)
     p2_content.grid_rowconfigure(0, weight=0)
     p2_content.grid_rowconfigure(1, weight=1)
 
@@ -205,7 +213,7 @@ def _build_page_manage(page2_frame):
     text_btn = ttk.Button(file_card, text="文字导入名单", command=load_text_students, **btn_style_opts)
     text_btn.grid(row=1, column=0, pady=2, sticky="ew")
 
-    clear_excel_btn = ttk.Button(file_card, text="清空学生名单", command=clear_students, **btn_style_opts)
+    clear_excel_btn = ttk.Button(file_card, text="取消当前名单", command=clear_students, **btn_style_opts)
     clear_excel_btn.grid(row=2, column=0, pady=2, sticky="ew")
 
     image_btn = ttk.Button(file_card, text="选择作业图片", command=load_image, **btn_style_opts)
@@ -234,7 +242,7 @@ def _build_page_manage(page2_frame):
     ctx.template_name_var = tk.StringVar()
     ctx.message_box = ttk.Combobox(
         template_card, textvariable=ctx.template_name_var,
-        values=list(ctx.template_dict.keys()), width=45
+        values=list(ctx.template_dict.keys()), width=30
     )
     ctx.message_box.grid(row=0, column=1, sticky="ew", pady=4)
 
@@ -242,7 +250,7 @@ def _build_page_manage(page2_frame):
         row=1, column=0, sticky="nw", padx=(0, 8), pady=4
     )
     ctx.message_text = tk.Text(
-        template_card, height=10, width=45,
+        template_card, height=10, width=30,
         font=("微软雅黑", 9), relief="solid", bd=1, bg="#fafafa"
     )
     ctx.message_text.grid(row=1, column=1, sticky="nsew", pady=4)
@@ -262,22 +270,45 @@ def _build_page_manage(page2_frame):
              font=("微软雅黑", 9), wraplength=130, justify="left", anchor="w").pack(fill="x", pady=1)
 
     # ─── 学生详细名单 ───
-    student_card = ttk.LabelFrame(p2_content, text="  学生详细名单（修改后请点击保存按钮）  ", style="Card.TLabelframe", padding=8)
+    student_card = ttk.LabelFrame(p2_content, text="  名单与本次发送对象  ", style="Card.TLabelframe", padding=8)
     student_card.grid(row=1, column=1, padx=(6, 0), pady=4, sticky="nsew")
 
-    ctx.student_listbox = tk.Text(
-        student_card, height=20, width=45, font=("微软雅黑", 9), relief="flat", bd=0,
-        bg="#fafafa", wrap="none"
-    )
-    ctx.student_listbox.pack(side="left", fill='x', expand=True)
-    student_scrollbar = ttk.Scrollbar(student_card, command=ctx.student_listbox.yview)
-    student_scrollbar.pack(side="right", fill="y")
-    ctx.student_listbox.config(yscrollcommand=student_scrollbar.set)
+    ctx.roster_var = tk.StringVar()
+    ctx.roster_box = ttk.Combobox(student_card, textvariable=ctx.roster_var, state="readonly", width=24)
+    ctx.roster_box.pack(fill="x", pady=(0, 4))
+    ctx.roster_box.bind("<<ComboboxSelected>>", on_roster_selected)
 
-    save_list_btn = ttk.Button(p2_content, text="保存修改名单", command=save_student_list, width=12)
+    selection_bar = ttk.Frame(student_card)
+    selection_bar.pack(fill="x", pady=(0, 4))
+    selection_buttons = {}
+    for mode, label in (("all", "全选"), ("none", "全不选"), ("invert", "反选")):
+        button = ttk.Button(selection_bar, text=label, width=7,
+                            command=lambda choice=mode: set_recipients(choice))
+        button.pack(side="left", padx=(0, 4))
+        selection_buttons[f"select_{mode}_btn"] = button
+    ttk.Label(student_card, text="点击学生切换；☐ 不发送；选择自动保存",
+              style="Hint.TLabel", wraplength=320).pack(anchor="w", pady=(0, 4))
+
+    tree_frame = ttk.Frame(student_card)
+    tree_frame.pack(fill="both", expand=True)
+    ctx.student_tree = ttk.Treeview(tree_frame, columns=("selected", "name", "status"),
+                                   show="headings", height=10, selectmode="extended")
+    for column, label, width in (("selected", "勾选", 45), ("name", "学生", 120), ("status", "本次", 65)):
+        ctx.student_tree.heading(column, text=label)
+        ctx.student_tree.column(column, width=width, minwidth=width, stretch=column == "name", anchor="center")
+    ctx.student_tree.tag_configure("excluded", foreground="#888888")
+    ctx.student_tree.pack(side="left", fill="both", expand=True)
+    student_scrollbar = ttk.Scrollbar(tree_frame, command=ctx.student_tree.yview)
+    student_scrollbar.pack(side="right", fill="y")
+    ctx.student_tree.config(yscrollcommand=student_scrollbar.set)
+    ctx.student_tree.bind("<Button-1>", toggle_student)
+    ctx.student_tree.bind("<space>", toggle_student)
+
+    save_list_btn = ttk.Button(p2_content, text="编辑并保存名单", command=save_student_list, width=12)
     save_list_btn.grid(row=2, column=1, pady=(4, 0), sticky="ew")
 
     return {
+        **selection_buttons,
         "excel_btn": excel_btn,
         "text_btn": text_btn,
         "clear_excel_btn": clear_excel_btn,
@@ -358,17 +389,7 @@ def build_main_window():
     _build_page_log(page3_frame)
 
     # 任务运行期间需要锁定的按钮集合
-    ctx.lockable_buttons = [
-        manage_buttons["excel_btn"],
-        manage_buttons["text_btn"],
-        manage_buttons["clear_excel_btn"],
-        manage_buttons["image_btn"],
-        manage_buttons["clear_image_btn"],
-        manage_buttons["template_btn"],
-        manage_buttons["save_template_btn"],
-        manage_buttons["save_list_btn"],
-        save_interval_btn,
-    ]
+    ctx.lockable_buttons = [*manage_buttons.values(), save_interval_btn]
 
     # ═══════════════════════
     # 事件绑定
@@ -386,6 +407,8 @@ def build_main_window():
     ctx.date_dead_entry.bind("<KeyRelease>", update_preview)
 
     load_config()
+    load_saved_rosters()
+    root.protocol("WM_DELETE_WINDOW", exit_app)
 
     update_preview()
 
